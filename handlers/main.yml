@@ -1,0 +1,9 @@
+---
+# Handlers for docker
+
+- name: restart docker-registry
+  become: yes
+  service:
+    daemon_reload: yes
+    name: docker-registry
+    state: restarted

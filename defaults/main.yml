@@ -1,0 +1,16 @@
+---
+# Defaults file for roles/docker-registry
+
+# Store registry data in this directory instead of in a docker volume
+# Parent directories are not created
+docker_registry_storage_directory: ''
+
+# Wait for the storage directory to appear before starting
+# (number of seconds, useful for remote mounts)
+docker_registry_storage_directory_wait: 0
+
+# Docker registry image version
+docker_registry_version: "2"
+
+# Listen on this port
+docker_registry_listen_port: 5000

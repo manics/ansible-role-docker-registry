@@ -1,0 +1,5 @@
+---
+- hosts: all
+  roles:
+    - role: openmicroscopy.docker
+    - role: ansible-role-docker-registry
