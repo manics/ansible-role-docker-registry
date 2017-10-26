@@ -10,7 +10,10 @@ docker_registry_storage_directory: ''
 docker_registry_storage_directory_wait: 0
 
 # Docker registry image version
-docker_registry_version: "2"
+docker_registry_version: '2'
 
 # Listen on this port
 docker_registry_listen_port: 5000
+
+# Registry container name
+docker_registry_container_name: 'docker-registry'

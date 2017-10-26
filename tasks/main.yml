@@ -8,12 +8,14 @@
     state: directory
   when: 'docker_registry_storage_directory | length > 0'
 
-# Note: Oracle Enterprise Linux doesn't come with the python2 yum & rpm bindings
-# required for the docker_image module.
-- name: docker registry | pull registry image
+- name: docker registry | if not exists, copy config.yml to /etc/docker/registry/
   become: yes
-  shell: docker pull registry:{{ docker_registry_version }}
-  when: ansible_distribution == "OracleLinux"
+  copy:
+    src: files/etc/docker/registry/config.yml
+    dest: /etc/docker/registry/config.yml
+    mode: 0644
+    directory_mode: 0755
+    force: no
 
 # Needed for Ansible docker_image module
 - name: docker registry | docker-python
@@ -29,7 +31,21 @@
     name: registry:{{ docker_registry_version }}
   when: ansible_distribution != "OracleLinux"
 
-- name: docker registry | systemd service file
+- name: docker registry | check for existing registry docker image
+  become: yes
+  shell: docker images -q registry:{{ docker_registry_version }}
+  changed_when: False
+  register: image_check
+  when: ansible_distribution == "OracleLinux"
+
+# Note: Oracle Enterprise Linux doesn't come with the python2 yum & rpm bindings
+# required for the docker_image module.
+- name: docker registry | pull registry image
+  become: yes
+  shell: docker pull registry:{{ docker_registry_version }}
+  when: ansible_distribution == "OracleLinux" and image_check.stdout | length == 0
+
+- name: docker registry | render systemd service template
   become: yes
   template:
     src: systemd-system-docker-registry-service.j2
@@ -38,7 +54,7 @@
   notify:
     - restart docker-registry
 
-- name: docker registry | enable
+- name: docker registry | enable systemd service
   become: yes
   systemd:
     daemon_reload: yes
