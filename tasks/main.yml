@@ -8,23 +8,33 @@
     state: directory
   when: 'docker_registry_storage_directory | length > 0'
 
+# Note: Oracle Enterprise Linux doesn't come with the python2 yum & rpm bindings
+# required for the docker_image module.
+- name: docker registry | pull registry image
+  become: yes
+  shell: docker pull registry:{{ docker_registry_version }}
+  when: ansible_distribution == "OracleLinux"
+
 # Needed for Ansible docker_image module
 - name: docker registry | docker-python
   become: yes
   yum:
     name: docker-python
     state: present
+  when: ansible_distribution != "OracleLinux"
 
 - name: docker registry | pull registry image
   become: yes
   docker_image:
     name: registry:{{ docker_registry_version }}
+  when: ansible_distribution != "OracleLinux"
 
 - name: docker registry | systemd service file
   become: yes
   template:
     src: systemd-system-docker-registry-service.j2
     dest: /etc/systemd/system/docker-registry.service
+    mode: 0755
   notify:
     - restart docker-registry
 
