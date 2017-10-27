@@ -13,7 +13,12 @@ ExecStartPre=-/usr/bin/docker rm docker-registry
 ExecStartPre=/bin/bash -c 'while [ ! -d {{ docker_registry_storage_directory | quote }} ]; do /usr/bin/sleep 5; done'
 TimeoutStartSec={{ docker_registry_storage_directory_wait }}
 {% endif %}
-ExecStart=/usr/bin/docker run --name docker-registry -p {{ docker_registry_listen_port }}:5000 registry:{{ docker_registry_version }}
+ExecStart=/usr/bin/docker run \
+    --name {{ docker_registry_container_name }} \
+    -p {{ docker_registry_listen_port }}:5000 \
+    -v /etc/docker/registry/config.yml:/etc/docker/registry/config.yml \
+    {% if (docker_registry_storage_directory | length > 0) %}-v {{ docker_registry_storage_directory }}:/var/lib/registry{% endif %} \
+    registry:{{ docker_registry_version }}
 ExecStop=/usr/bin/docker stop docker-registry
 
 [Install]
